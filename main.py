@@ -1,23 +1,31 @@
 #!/usr/bin/env python3
-"""Copy the pre-rendered entry.png to $MAKEFUN_OUTPUT_DIR/entry.png.
+"""News image 20261123 entry — copy entry.png into the output directory.
 
-Stdlib only. Deterministic: the same bytes on every run.
+Stdlib only. Resolves entry.png from this file's own directory (never the
+working directory) and writes it to $MAKEFUN_OUTPUT_DIR (default
+<repo>/output), creating the output directory if needed.
 """
+
 import os
 import shutil
+import sys
 
 
-def main():
+def main() -> int:
     here = os.path.dirname(os.path.abspath(__file__))
     src = os.path.join(here, "entry.png")
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or os.path.join(here, "output")
     os.makedirs(out_dir, exist_ok=True)
     dst = os.path.join(out_dir, "entry.png")
     shutil.copyfile(src, dst)
-    if os.path.getsize(dst) != os.path.getsize(src):
-        raise RuntimeError("entry.png copy is incomplete")
-    print("wrote %s (%d bytes)" % (dst, os.path.getsize(src)))
+    copied = os.path.getsize(dst)
+    if copied != os.path.getsize(src):
+        raise RuntimeError(
+            f"incomplete copy: {dst} is {copied} bytes, expected {os.path.getsize(src)}"
+        )
+    print(f"copied entry.png to {dst} ({copied} bytes)")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
